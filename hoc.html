@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+        <script src="https://unpkg.com/react@16.8.0/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@16.8.0/umd/react-dom.development.js"></script>
+    </head>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      const DataComponent = (ComposedComponent, url) =>
+        function DataComponent(props) {
+            const [state, setState] = useState({
+              data: [],
+              loaded: false,
+              timeoutId: null
+            });
+
+            const updateData = async () => {
+              setState({ loaded: false });
+              const response = await fetch(url);
+              const data = await response.json();
+              setState({
+                loaded: true,
+                data
+              });
+              const id = setTimeout(updateData, 4000);
+              return id;
+            }
+
+            useEffect(() => {
+              const timeoutId = updateData();
+              return () => clearTimeout(timeoutId);
+            }, []);
+
+            return <div>
+              {state.loaded
+                ? <ComposedComponent data={state.data} {...props} />
+                : <div>Loading</div>}
+            </div>;
+        }
+
+      const PeopleList = ({data}) =>
+        <ol>
+          {data.results.map((person, i) => {
+            const {first, last} = person.name
+            return (
+              <li key={i}>{first} {last}</li>
+            )
+          })}
+        </ol>
+
+      const RandomMeUsers = DataComponent(
+        PeopleList,
+        "https://randomuser.me/api?results=10"
+      )
+
+      ReactDOM.render(
+        <RandomMeUsers />,
+        document.getElementById('root')
+      )
+
+    </script>
+</html>

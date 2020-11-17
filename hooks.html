@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+        <script src="https://unpkg.com/react@16.8.0/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@16.8.0/umd/react-dom.development.js"></script>
+    </head>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      const useFetchPeople = () => {
+        const [state, setState] = useState({
+          people: [],
+          loaded: false
+        });
+        const updatePeople = async () => {
+          setState({ loaded: false, people: [] });
+          const response = await fetch('https://randomuser.me/api?results=10');
+          const people = await response.json();
+          setState({
+            loaded: true,
+            people
+          });
+          setTimeout(updatePeople, 4000);
+        }
+
+        useEffect(() => {
+          updatePeople();
+        }, []);
+
+        return state;
+      }
+
+      const PeopleList = ({people}) =>
+        <ol>
+          {people.results.map((person, i) => {
+            const {first, last} = person.name
+            return (
+              <li key={i}>{first} {last}</li>
+            )
+          })}
+        </ol>
+
+      const RandomMeUsers = () => {
+        const { people, loaded } = useFetchPeople();
+        if (!loaded) return <div>Loading...</div>
+
+        return <PeopleList people={people} />
+      }
+
+      ReactDOM.render(
+        <RandomMeUsers />,
+        document.getElementById('root')
+      )
+
+    </script>
+</html>
