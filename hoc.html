@@ -7,10 +7,12 @@
     </head>
     <div id="root"></div>
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState, useEffect, useRef } = React;
 
       const DataComponent = (ComposedComponent, url) =>
         function DataComponent(props) {
+            // useRef retains the reference of a mutable object during rendering phases
+            const timeoutId = useRef(null);
             const [state, setState] = useState({
               data: [],
               loaded: false,
@@ -26,12 +28,12 @@
                 data
               });
               const id = setTimeout(updateData, 4000);
-              return id;
+              timeoutId.current = id;
             }
 
             useEffect(() => {
-              const timeoutId = updateData();
-              return () => clearTimeout(timeoutId);
+              updateData();
+              return () => clearTimeout(timeoutId.current);
             }, []);
 
             return <div>

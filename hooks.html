@@ -7,9 +7,10 @@
     </head>
     <div id="root"></div>
     <script type="text/babel">
-      const { useState, useEffect } = React;
+      const { useState, useEffect, useRef } = React;
 
       const useFetchPeople = () => {
+        const timeoutId = useRef(null);
         const [state, setState] = useState({
           people: [],
           loaded: false
@@ -22,11 +23,13 @@
             loaded: true,
             people
           });
-          setTimeout(updatePeople, 4000);
+          const id = setTimeout(updatePeople, 4000);
+          timeoutId.current = id;
         }
 
         useEffect(() => {
           updatePeople();
+          return () => clearTimeout(timeoutId.current);
         }, []);
 
         return state;
